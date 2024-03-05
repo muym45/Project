@@ -1,0 +1,138 @@
+('Rak 1'),
+('Rak 2'),
+('Rak 3'),
+('Rak 4'),
+('Rak 5');
+
+('Tere Liye'),
+('Andrea Hirata'),
+('J.K. Rowling'),
+('George Orwell'),
+('Haruki Murakami');
+
+('Bintang',528,1,1,'2017-06-12'),
+('Laskar Pelangi',293,2,2,'2008-10-25'),
+('Harry Potter',223,3,3,'1997-06-30'),
+('1984',328,4,4,'1949-06-08'),
+('Norwegian Wood',296,5,5,'1987-09-27');
+
+buat file pembelajaranSql.md
+mysql -u root -p
+
+membuat database buku
+create database buku;
+
+menggunakan database buku
+use buku;
+
+Mari kita siapkan tiga tabel: author, rak, dan buku, dimana buku akan menggunakan foreign keys untuk merujuk pada author dan rak.
+table author
+CREATE TABLE `author` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nama_author` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+table rakk
+CREATE TABLE `rak` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nomor_rak` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+table buku
+CREATE TABLE `buku` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nama_buku` VARCHAR(255) NOT NULL,
+  `halaman_buku` INT NOT NULL,
+  `author_id` INT,
+  `rak_id` INT,
+  `rilis_buku` DATE NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`author_id`) REFERENCES `author`(`id`)
+  ON DELETE CASCADE,
+  FOREIGN KEY (`rak_id`) REFERENCES `rak`(`id`)
+  ON DELETE CASCADE
+);
+
+Dengan ini, buku.author_id akan merujuk pada author.id dan buku.rak_id pada rak.id, memastikan bahwa setiap buku yang diinput harus memiliki penulis dan rak yang valid.
+
+Menambahkan Data dengan Referensi Valid
+Tambahkan beberapa penulis dan rak ke dalam database Anda:  
+
+INSERT INTO `author` (`nama_author`) VALUES ('JK Rowling'), ('George Orwell');
+INSERT INTO `rak` (`nomor_rak`) VALUES ('RAK1'), ('RAK2');
+
+Setelah itu, coba tambahkan buku yang merujuk pada penulis dan rak yang sudah Anda tambahkan:
+
+INSERT INTO `buku` (`nama_buku`, `halaman_buku`, `author_id`, `rak_id`, `rilis_buku`) VALUES
+('Harry Potter', 350, 1, 1, '1997-06-26'),
+('1984', 300, 2, 2, '1949-06-08');
+
+Menggunakan Query untuk Join Tabel
+Coba gabungkan tabel buku dengan tabel author dan rak menggunakan query JOIN:
+
+SELECT
+    buku.nama_buku,
+    buku.rilis_buku,
+    author.nama_author,
+    rak.nomor_rak
+FROM
+    buku
+JOIN author ON buku.author_id = author.id
+JOIN rak ON buku.rak_id = rak.id;
+
+Menghapus Data dengan Referensi
+Hapus salah satu penulis dan perhatikan bagaimana database Anda bereaksi terhadap data buku yang terkait:
+
+DELETE FROM `author` WHERE `id` = 1;
+
+Setelah melakukan latihan ini, Anda akan mendapatkan insight yang lebih dalam mengenai bagaimana foreign key bekerja dalam menjaga integritas data antar tabel.
+
+Bermain dengan Constraint ON DELETE dan ON UPDATE
+Tambahkan ke tabel buku constraint ON DELETE SET NULL dan ON UPDATE CASCADE, lalu coba hapus dan update record di tabel author dan rak untuk melihat perubahan yang terjadi pada tabel buku.
+
+ALTER TABLE `buku` DROP FOREIGN KEY `buku_ibfk_1`;
+ALTER TABLE `buku` DROP FOREIGN KEY `buku_ibfk_2`;
+ALTER TABLE `buku`
+ADD CONSTRAINT `buku_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `author`(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+ADD CONSTRAINT `buku_ibfk_2` FOREIGN KEY (`rak_id`) REFERENCES `rak`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+Dengan latihan-latihan ini, belajar tentang foreign key akan menjadi pengalaman belajar yang lebih praktis dan menarik.
+
+Memahami LEFT JOIN, RIGHT JOIN, Dan JOIN
+
+LEFT JOIN
+LEFT JOIN dalam SQL digunakan untuk menggabungkan dua tabel, di mana hasil akan menyertakan semua baris dari tabel kiri (buku), bahkan jika tabel kanan (author atau rak) tidak memiliki baris yang cocok. Jika tidak ada kecocokan, hasil di sisi kanan akan berisi NULL.
+Contoh penggunaan LEFT JOIN dengan tabel buku dan author:
+
+SELECT
+  buku.nama_buku,
+  author.nama_author
+FROM
+  buku
+LEFT JOIN author ON buku.author_id = author.id;
+
+RIGHT JOIN
+RIGHT JOIN bekerja dengan cara yang sama seperti LEFT JOIN, tetapi sebaliknya. Semua baris dari tabel kanan akan disertakan dalam hasil gabungan, dan jika tidak ada kecocokan di tabel kiri, maka hasilnya akan berisi NULL di bagian kiri.
+Contoh penggunaan RIGHT JOIN dengan tabel buku dan rak:
+
+SELECT
+  buku.nama_buku,
+  rak.nomor_rak
+FROM
+  buku
+RIGHT JOIN rak ON buku.rak_id = rak.id;
+
+INNER JOIN (JOIN)
+INNER JOIN digunakan untuk menggabungkan baris dari dua tabel berdasarkan kondisi tertentu. Hanya baris yang memiliki kecocokan di kedua tabel yang akan disertakan dalam hasil.
+Contoh penggunaan INNER JOIN dengan tabel buku, author, dan rak:
+
+SELECT
+  buku.nama_buku,
+  author.nama_author,
+  rak.nomor_rak
+FROM
+  buku
+JOIN author ON buku.author_id = author.id
+JOIN rak ON buku.rak_id = rak.id;
